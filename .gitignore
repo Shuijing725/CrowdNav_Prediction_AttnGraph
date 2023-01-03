@@ -1,0 +1,11 @@
+gst_datasets/
+gst_updated/scripts/data
+.idea/
+venv/
+*.pyc 
+*__pycache__*
+
+train1.py
+test1.py
+test2.py
+check_env.py
