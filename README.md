@@ -1,7 +1,6 @@
 # CrowdNav++
 This repository contains the codes for our paper titled "Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph". 
-For more details, please refer to the [project website]() and 
-[arXiv preprint](https://arxiv.org/abs/2203.01821).
+For more details, please refer to the [arXiv preprint](https://arxiv.org/abs/2203.01821).
 For experiment demonstrations, please refer to the [youtube video](https://www.youtube.com/watch?v=nxpxhF019VA).
 
 
@@ -13,7 +12,7 @@ To encourage longsighted robot behaviors, we infer the intentions of dynamic age
 The predictions are incorporated into a model-free RL framework to prevent the robot from intruding into the intended paths of other agents. 
 We demonstrate that our method enables the robot to achieve good navigation performance and non-invasiveness in challenging crowd navigation scenarios. We successfully transfer the policy learned in simulation to a real-world TurtleBot 2i.
 
-<img src="/figures/open.jpg" width="450" />
+<img src="/figures/open.png" width="450" />
 
 
 ## Setup
@@ -33,58 +32,58 @@ pip install -e .
 3. Install [Python-RVO2](https://github.com/sybrenstuvel/Python-RVO2) library
 
 
-## Getting started
+## Overview
 This repository is organized in five parts: 
 - `crowd_nav/` folder contains configurations and policies used in the simulator.
 - `crowd_sim/` folder contains the simulation environment. 
-- `gst_updated/` folder contains the code for the human trajectory prediction model.
+- `gst_updated/` folder contains the code for running inference of a human trajectory predictor, named Gumbel Social Transformer (GST) [2].
 - `rl/` contains the code for the RL policy networks, wrappers for the prediction network, and ppo algorithm. 
 - `trained_models/` contains some pretrained models provided by us. 
 
-Note that this repository does not include codes for training a trajectory prediction network. However, we provide code for running inference of Gumbel Social Transformer (GST) from [this repo](https://github.com/tedhuang96/gst) [2].
+Note that this repository does not include codes for training a trajectory prediction network. Please refer to from [this repo](https://github.com/tedhuang96/gst) instead.
 
-### Run the code
-1. Train a policy. 
-  - Modify the configurations.
-    1. Environment configurations: Modify `crowd_nav/configs/config.py`. Especially,
-    - Choice of human trajectory predictor: 
-      - Set `sim.predict_method = 'inferred'` if a learning-based GST predictor is used [2]. Please also change `pred.model_dir` to be the directory of a trained GST model. We provide two pretrained models [here](https://github.com/Shuijing725/CrowdNav_Prediction/gst_updated/results/).
-      - Set `sim.predict_method = 'const_vel'` if constant velocity model is used.
-      - Set `sim.predict_method = 'truth'` if ground truth predictor is used.
-      - Set `sim.predict_method = 'none'` if you do not want to use future trajectories to change the observation and reward.
-    - Randomization of human behaviors: If you want to randomize the ORCA humans, 
-      - set `env.randomize_attributes` to True to randomize the preferred velocity and radius of humans;
-      - set `humans.random_goal_changing` to True to let humans randomly change goals before they arrive at their original goals.
+## Run the code
+### Training
+- Modify the configurations.
+  1. Environment configurations: Modify `crowd_nav/configs/config.py`. Especially,
+  - Choice of human trajectory predictor: 
+    - Set `sim.predict_method = 'inferred'` if a learning-based GST predictor is used [2]. Please also change `pred.model_dir` to be the directory of a trained GST model. We provide two pretrained models [here](https://github.com/Shuijing725/CrowdNav_Prediction_AttnGraph/tree/main/gst_updated/results/).
+    - Set `sim.predict_method = 'const_vel'` if constant velocity model is used.
+    - Set `sim.predict_method = 'truth'` if ground truth predictor is used.
+    - Set `sim.predict_method = 'none'` if you do not want to use future trajectories to change the observation and reward.
+  - Randomization of human behaviors: If you want to randomize the ORCA humans, 
+    - set `env.randomize_attributes` to True to randomize the preferred velocity and radius of humans;
+    - set `humans.random_goal_changing` to True to let humans randomly change goals before they arrive at their original goals.
 
-    2. PPO and network configurations: modify `arguments.py`
-    - `env_name` (must be consistent with `sim.predict_method` in `crowd_nav/configs/config.py`): 
-       - If you use the GST predictor, set to `CrowdSimPredRealGST-v0`.
-       - If you use the ground truth predictor or constant velocity predictor, set to `CrowdSimPred-v0`.
-       - If you don't want to use prediction, set to `CrowdSimVarNum-v0`. 
-    - `use_self_attn`: human-human attention network will be included if set to True, else there will be no human-human attention.
-    - `use_hr_attn`: robot-human attention network will be included if set to True, else there will be no robot-human attention.
-  - Then run
-    ```
-    python train.py 
-    ```
-  - The checkpoints and configuration files will be saved to `output_dir` in `arguments.py`.
-2. Test policies.    
-    Please modify the test arguments in the beginning of `test.py`, and run   
-    ```
-    python test.py 
-    ```
-  Note that the `config.py` and `arguments.py` in the testing folder will be loaded, instead of those in the root directory.  
-  The testing results are logged in `trained_models/your_output_dir/test/` folder, and are also printed on terminal.  
-  If `visualize=True` in `test.py`, you will be able to see visualizations like this:
-  <img src="/figures/visual.gif" width="450" />
-3. Plot training curve.
+  2. PPO and network configurations: modify `arguments.py`
+  - `env_name` (must be consistent with `sim.predict_method` in `crowd_nav/configs/config.py`): 
+     - If you use the GST predictor, set to `CrowdSimPredRealGST-v0`.
+     - If you use the ground truth predictor or constant velocity predictor, set to `CrowdSimPred-v0`.
+     - If you don't want to use prediction, set to `CrowdSimVarNum-v0`. 
+  - `use_self_attn`: human-human attention network will be included if set to True, else there will be no human-human attention.
+  - `use_hr_attn`: robot-human attention network will be included if set to True, else there will be no robot-human attention.
+- After you change the configurations, run
   ```
-  python plot.py
+  python train.py 
   ```
-  Here are learning curves of our proposed network model with GST predictor.
+- The checkpoints and configuration files will be saved to the folder specified by `output_dir` in `arguments.py`.
 
-  <img src="/figures/rewards.png" width="450" />
-  <img src="/figures/losses.png" width="450" />
+### Testing
+Please modify the test arguments in line 20-33 of `test.py`, and run   
+```
+python test.py 
+```
+Note that the `config.py` and `arguments.py` in the testing folder will be loaded, instead of those in the root directory.  
+The testing results are logged in `trained_models/your_output_dir/test/` folder, and are also printed on terminal.  
+If you set `visualize=True` in `test.py`, you will be able to see visualizations like this:
+<img src="/figures/visual.gif" width="450" />  
+### Plot the training curves
+```
+python plot.py
+```
+Here are example learning curves of our proposed network model with GST predictor.
+
+<img src="/figures/rewards.png" width="350" /> <img src="/figures/losses.png" width="350" />
 
 ## Disclaimer
 1. We only tested our code in Ubuntu with Python 3.6 and Python 3.8. The code may work on other OS or other versions of Python, but we do not have any guarantee.  
