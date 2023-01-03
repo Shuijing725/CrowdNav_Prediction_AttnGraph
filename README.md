@@ -12,8 +12,9 @@ To encourage longsighted robot behaviors, we infer the intentions of dynamic age
 The predictions are incorporated into a model-free RL framework to prevent the robot from intruding into the intended paths of other agents. 
 We demonstrate that our method enables the robot to achieve good navigation performance and non-invasiveness in challenging crowd navigation scenarios. We successfully transfer the policy learned in simulation to a real-world TurtleBot 2i.
 
+<p align="center">
 <img src="/figures/open.png" width="450" />
-
+</p>
 
 ## Setup
 1. In a conda environment or virtual environment with Python 3.x, install the required python package
@@ -75,15 +76,15 @@ python test.py
 ```
 Note that the `config.py` and `arguments.py` in the testing folder will be loaded, instead of those in the root directory.  
 The testing results are logged in `trained_models/your_output_dir/test/` folder, and are also printed on terminal.  
-If you set `visualize=True` in `test.py`, you will be able to see visualizations like this:
-<img src="/figures/visual.gif" width="450" />  
+If you set `visualize=True` in `test.py`, you will be able to see visualizations like this:  
+<img src="/figures/visual.gif" width="420" />  
 ### Plot the training curves
 ```
 python plot.py
 ```
 Here are example learning curves of our proposed network model with GST predictor.
 
-<img src="/figures/rewards.png" width="350" /> <img src="/figures/losses.png" width="350" />
+<img src="/figures/rewards.png" width="360" /> <img src="/figures/losses.png" width="360" />
 
 ## Disclaimer
 1. We only tested our code in Ubuntu with Python 3.6 and Python 3.8. The code may work on other OS or other versions of Python, but we do not have any guarantee.  
