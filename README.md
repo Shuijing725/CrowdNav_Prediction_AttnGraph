@@ -47,22 +47,22 @@ Note that this repository does not include codes for training a trajectory predi
 ### Training
 - Modify the configurations.
   1. Environment configurations: Modify `crowd_nav/configs/config.py`. Especially,
-  - Choice of human trajectory predictor: 
-    - Set `sim.predict_method = 'inferred'` if a learning-based GST predictor is used [2]. Please also change `pred.model_dir` to be the directory of a trained GST model. We provide two pretrained models [here](https://github.com/Shuijing725/CrowdNav_Prediction_AttnGraph/tree/main/gst_updated/results/).
-    - Set `sim.predict_method = 'const_vel'` if constant velocity model is used.
-    - Set `sim.predict_method = 'truth'` if ground truth predictor is used.
-    - Set `sim.predict_method = 'none'` if you do not want to use future trajectories to change the observation and reward.
-  - Randomization of human behaviors: If you want to randomize the ORCA humans, 
-    - set `env.randomize_attributes` to True to randomize the preferred velocity and radius of humans;
-    - set `humans.random_goal_changing` to True to let humans randomly change goals before they arrive at their original goals.
+     - Choice of human trajectory predictor: 
+       - Set `sim.predict_method = 'inferred'` if a learning-based GST predictor is used [2]. Please also change `pred.model_dir` to be the directory of a trained GST model. We provide two pretrained models [here](https://github.com/Shuijing725/CrowdNav_Prediction_AttnGraph/tree/main/gst_updated/results/).
+       - Set `sim.predict_method = 'const_vel'` if constant velocity model is used.
+       - Set `sim.predict_method = 'truth'` if ground truth predictor is used.
+       - Set `sim.predict_method = 'none'` if you do not want to use future trajectories to change the observation and reward.
+     - Randomization of human behaviors: If you want to randomize the ORCA humans, 
+       - set `env.randomize_attributes` to True to randomize the preferred velocity and radius of humans;
+       - set `humans.random_goal_changing` to True to let humans randomly change goals before they arrive at their original goals.
 
   2. PPO and network configurations: modify `arguments.py`
-  - `env_name` (must be consistent with `sim.predict_method` in `crowd_nav/configs/config.py`): 
-     - If you use the GST predictor, set to `CrowdSimPredRealGST-v0`.
-     - If you use the ground truth predictor or constant velocity predictor, set to `CrowdSimPred-v0`.
-     - If you don't want to use prediction, set to `CrowdSimVarNum-v0`. 
-  - `use_self_attn`: human-human attention network will be included if set to True, else there will be no human-human attention.
-  - `use_hr_attn`: robot-human attention network will be included if set to True, else there will be no robot-human attention.
+     - `env_name` (must be consistent with `sim.predict_method` in `crowd_nav/configs/config.py`): 
+        - If you use the GST predictor, set to `CrowdSimPredRealGST-v0`.
+        - If you use the ground truth predictor or constant velocity predictor, set to `CrowdSimPred-v0`.
+        - If you don't want to use prediction, set to `CrowdSimVarNum-v0`. 
+     - `use_self_attn`: human-human attention network will be included if set to True, else there will be no human-human attention.
+     - `use_hr_attn`: robot-human attention network will be included if set to True, else there will be no robot-human attention.
 - After you change the configurations, run
   ```
   python train.py 
@@ -94,13 +94,21 @@ Unfortunately, we do not have time or resources for a thorough hyperparameter se
 To achieve the best performance, we recommend some manual hyperparameter tuning.
 
 ## Citation
-If you find the code or the paper useful for your research, please cite our paper:
+If you find the code or the paper useful for your research, please cite the following papers:
 ```
 @article{liu2022intention,
   title={Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph},
   author={Liu, Shuijing and Chang, Peixin and Huang, Zhe and Chakraborty, Neeloy and Hong, Kaiwen and Liang, Weihang and Livingston McPherson, D. and Geng, Junyi and Driggs-Campbell, Katherine},
   journal={arXiv preprint arXiv:2203.01821},
   year={2022}
+}
+
+@inproceedings{liu2020decentralized,
+  title={Decentralized Structural-RNN for Robot Crowd Navigation with Deep Reinforcement Learning},
+  author={Liu, Shuijing and Chang, Peixin and Liang, Weihang and Chakraborty, Neeloy and Driggs-Campbell, Katherine},
+  booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2021},
+  pages={3517-3524}
 }
 ```
 
