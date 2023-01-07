@@ -26,7 +26,6 @@ pip install -r requirements.txt
 ```
 git clone https://github.com/openai/baselines.git
 cd baselines
-git checkout tf2
 pip install -e .
 ```
 
@@ -84,7 +83,7 @@ python plot.py
 ```
 Here are example learning curves of our proposed network model with GST predictor.
 
-<img src="/figures/rewards.png" width="360" /> <img src="/figures/losses.png" width="360" />
+<img src="/figures/rewards.png" width="370" /> <img src="/figures/losses.png" width="370" />
 
 ## Disclaimer
 1. We only tested our code in Ubuntu with Python 3.6 and Python 3.8. The code may work on other OS or other versions of Python, but we do not have any guarantee.  

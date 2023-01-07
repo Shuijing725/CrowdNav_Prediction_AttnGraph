@@ -8,7 +8,7 @@ def get_args():
 
     # the saving directory for train.py
     parser.add_argument(
-        '--output_dir', type=str, default='trained_models/GST_predictor_rand')
+        '--output_dir', type=str, default='trained_models/my_model')
 
     # resume training from an existing checkpoint or not
     parser.add_argument(
