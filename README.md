@@ -1,6 +1,6 @@
 # CrowdNav++
 This repository contains the codes for our paper titled "Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph". 
-For more details, please refer to the [arXiv preprint](https://arxiv.org/abs/2203.01821).
+For more details, please refer to the [project website](https://sites.google.com/view/intention-aware-crowdnav/home) and [arXiv preprint](https://arxiv.org/abs/2203.01821).
 For experiment demonstrations, please refer to the [youtube video](https://www.youtube.com/watch?v=nxpxhF019VA).
 
 
@@ -69,7 +69,7 @@ Note that this repository does not include codes for training a trajectory predi
 - The checkpoints and configuration files will be saved to the folder specified by `output_dir` in `arguments.py`.
 
 ### Testing
-Please modify the test arguments in line 20-33 of `test.py`, and run   
+Please modify the test arguments in line 20-33 of `test.py` (**Don't set the argument values in terminal!**), and run   
 ```
 python test.py 
 ```
