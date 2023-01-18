@@ -1,5 +1,5 @@
 # CrowdNav++
-This repository contains the codes for our paper titled "Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph". 
+This repository contains the codes for our paper titled "Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph" in ICRA 2023. 
 For more details, please refer to the [project website](https://sites.google.com/view/intention-aware-crowdnav/home) and [arXiv preprint](https://arxiv.org/abs/2203.01821).
 For experiment demonstrations, please refer to the [youtube video](https://www.youtube.com/watch?v=nxpxhF019VA).
 
@@ -95,11 +95,11 @@ To achieve the best performance, we recommend some manual hyperparameter tuning.
 ## Citation
 If you find the code or the paper useful for your research, please cite the following papers:
 ```
-@article{liu2022intention,
+@inproceedings{liu2022intention,
   title={Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph},
   author={Liu, Shuijing and Chang, Peixin and Huang, Zhe and Chakraborty, Neeloy and Hong, Kaiwen and Liang, Weihang and Livingston McPherson, D. and Geng, Junyi and Driggs-Campbell, Katherine},
-  journal={arXiv preprint arXiv:2203.01821},
-  year={2022}
+  booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2023}
 }
 
 @inproceedings{liu2020decentralized,
