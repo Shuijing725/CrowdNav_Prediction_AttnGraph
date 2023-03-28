@@ -1,5 +1,6 @@
 gst_datasets/
 gst_updated/scripts/data
+trained_models/
 .idea/
 venv/
 *.pyc 

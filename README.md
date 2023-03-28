@@ -22,14 +22,16 @@ We demonstrate that our method enables the robot to achieve good navigation perf
 pip install -r requirements.txt
 ```
 
-2. Install [OpenAI Baselines](https://github.com/openai/baselines#installation) 
+2. Install Pytorch 1.12.1 following the instructions [here](https://pytorch.org/get-started/previous-versions/#v1121)
+
+3. Install [OpenAI Baselines](https://github.com/openai/baselines#installation) 
 ```
 git clone https://github.com/openai/baselines.git
 cd baselines
 pip install -e .
 ```
 
-3. Install [Python-RVO2](https://github.com/sybrenstuvel/Python-RVO2) library
+4. Install [Python-RVO2](https://github.com/sybrenstuvel/Python-RVO2) library
 
 
 ## Overview

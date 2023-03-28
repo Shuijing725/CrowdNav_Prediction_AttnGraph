@@ -48,7 +48,7 @@ class CrowdSimPredRealGST(CrowdSimPred):
                             dtype=np.float32)
 
         # masks for gst pred model
-        # whether each human is visible to robot
+        # whether each human is visible to robot (ordered by human ID, should not be sorted)
         d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(self.config.sim.human_num + self.config.sim.human_num_range,),
                                             dtype=np.bool)
@@ -83,15 +83,13 @@ class CrowdSimPredRealGST(CrowdSimPred):
         # add additional keys, removed unused keys
         ob = {}
 
-        ob['visible_masks'] = self.human_visibility
+        ob['visible_masks'] = parent_ob['visible_masks']
         ob['robot_node'] = parent_ob['robot_node']
         ob['temporal_edges'] = parent_ob['temporal_edges']
 
         ob['spatial_edges'] = np.tile(parent_ob['spatial_edges'], self.predict_steps+1)
 
         ob['detected_human_num'] = parent_ob['detected_human_num']
-        if sum(ob['visible_masks'])!= ob['detected_human_num'] and sum(ob['visible_masks']) > 0:
-            print('hello')
 
         return ob
 

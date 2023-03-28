@@ -48,7 +48,7 @@ class CrowdSimVarNum(CrowdSim):
         d['spatial_edges'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.max_human_num, 2), dtype=np.float32)
         # number of humans detected at each timestep
         d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, ), dtype=np.float32)
-        # whether each human is visible to robot
+        # whether each human is visible to robot (ordered by human ID, should not be sorted)
         d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(self.max_human_num,),
                                             dtype=np.bool)
@@ -255,11 +255,16 @@ class CrowdSimVarNum(CrowdSim):
                     [self.last_human_states[i, 0] - self.robot.px, self.last_human_states[i, 1] - self.robot.py])
                 all_spatial_edges[self.humans[i].id, :2] = relative_pos
 
+        ob['visible_masks'] = np.zeros(self.max_human_num, dtype=np.bool)
         # sort all humans by distance (invisible humans will be in the end automatically)
         if sort:
             ob['spatial_edges'] = np.array(sorted(all_spatial_edges, key=lambda x: np.linalg.norm(x)))
+            # after sorting, the visible humans must be in the front
+            if num_visibles > 0:
+                ob['visible_masks'][:num_visibles] = True
         else:
             ob['spatial_edges'] = all_spatial_edges
+            ob['visible_masks'][:self.human_num] = self.human_visibility
         ob['spatial_edges'][np.isinf(ob['spatial_edges'])] = 15
         ob['detected_human_num'] = num_visibles
         # if no human is detected, assume there is one dummy human at (15, 15) to make the pack_padded_sequence work
@@ -268,7 +273,6 @@ class CrowdSimVarNum(CrowdSim):
 
         # update self.observed_human_ids
         self.observed_human_ids = np.where(self.human_visibility)[0]
-        ob['visible_masks'] = self.human_visibility
 
         self.ob = ob
 
