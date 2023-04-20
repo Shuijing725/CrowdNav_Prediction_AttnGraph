@@ -3,6 +3,8 @@ This repository contains the codes for our paper titled "Intention Aware Robot C
 For more details, please refer to the [project website](https://sites.google.com/view/intention-aware-crowdnav/home) and [arXiv preprint](https://arxiv.org/abs/2203.01821).
 For experiment demonstrations, please refer to the [youtube video](https://www.youtube.com/watch?v=nxpxhF019VA).
 
+**[News]**
+- Please check out our open-sourced sim2real tutorial [here](https://github.com/Shuijing725/CrowdNav_Sim2Real_Turtlebot)
 
 ## Abstract
 We study the problem of safe and intention-aware robot navigation in dense and interactive crowds. 
@@ -86,6 +88,10 @@ python plot.py
 Here are example learning curves of our proposed network model with GST predictor.
 
 <img src="/figures/rewards.png" width="370" /> <img src="/figures/losses.png" width="370" />
+
+## Sim2Real
+We are happy to announce that our sim2real tutorial and code are released [here](https://github.com/Shuijing725/CrowdNav_Sim2Real_Turtlebot)!  
+**Note:** This repo only serves as a reference point for the sim2real transfer of crowd navigation. Since there are lots of uncertainties in real-world experiments that may affect performance, we cannot guarantee that it is reproducible on all cases. 
 
 ## Disclaimer
 1. We only tested our code in Ubuntu with Python 3.6 and Python 3.8. The code may work on other OS or other versions of Python, but we do not have any guarantee.  
