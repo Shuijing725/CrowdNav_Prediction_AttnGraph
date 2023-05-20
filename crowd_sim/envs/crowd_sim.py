@@ -156,12 +156,9 @@ class CrowdSim(gym.Env):
         self.predict_steps = config.sim.predict_steps
         self.human_num_range = config.sim.human_num_range
         assert self.human_num > self.human_num_range
-        if self.config.action_space.kinematics == 'holonomic':
-            self.max_human_num = self.human_num + self.human_num_range
-            self.min_human_num = self.human_num - self.human_num_range
-        else:
-            self.min_human_num = 1
-            self.max_human_num = 5
+
+        self.max_human_num = self.human_num + self.human_num_range
+        self.min_human_num = self.human_num - self.human_num_range
 
         # for sim2real dynamics check
         self.record=config.sim2real.record
