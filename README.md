@@ -81,6 +81,7 @@ Note that the `config.py` and `arguments.py` in the testing folder will be loade
 The testing results are logged in `trained_models/your_output_dir/test/` folder, and are also printed on terminal.  
 If you set `visualize=True` in `test.py`, you will be able to see visualizations like this:  
 <img src="/figures/visual.gif" width="420" />  
+If you wish to save the visualization to disk, set `save_slides=True` in `test.py` and all rendered frames will be saved in a subfolder inside the `trained_models/your_output_dir/test/`.   
 ### Plot the training curves
 ```
 python plot.py
