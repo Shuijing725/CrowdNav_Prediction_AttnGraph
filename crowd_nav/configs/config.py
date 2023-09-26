@@ -47,9 +47,9 @@ class Config(object):
     # 'truth': ground truth future traj (with info in robot's fov)
     # 'inferred': inferred future traj from GST network
     # 'none': no prediction
-    sim.predict_method = 'inferred'
+    sim.predict_method = 'none'
     # render the simulation during training or not
-    sim.render = False
+    sim.render = True
 
     # for save_traj only
     render_traj = False
@@ -98,7 +98,7 @@ class Config(object):
     # whether robot is visible to humans (whether humans respond to the robot's motion)
     robot.visible = False
     # For baseline: srnn; our method: selfAttn_merge_srnn
-    robot.policy = 'selfAttn_merge_srnn'
+    robot.policy = 'allAttn'
     robot.radius = 0.3
     robot.v_pref = 1
     robot.sensor = "coordinates"

@@ -5,6 +5,7 @@ import torch.nn as nn
 from rl.networks.distributions import Bernoulli, Categorical, DiagGaussian
 from .srnn_model import SRNN
 from .selfAttn_srnn_temp_node import selfAttn_merge_SRNN
+from .allAttn import All_Attn
 
 class Flatten(nn.Module):
     def forward(self, x):
@@ -22,6 +23,8 @@ class Policy(nn.Module):
             base=SRNN
         elif base == 'selfAttn_merge_srnn':
             base = selfAttn_merge_SRNN
+        elif base == 'allAttn':
+            base = All_Attn
         else:
             raise NotImplementedError
 
@@ -32,6 +35,7 @@ class Policy(nn.Module):
             num_outputs = action_space.n
             self.dist = Categorical(self.base.output_size, num_outputs)
         elif action_space.__class__.__name__ == "Box":
+            print(f'num_outputs: {action_space.shape[0]}')
             num_outputs = action_space.shape[0]
 
             self.dist = DiagGaussian(self.base.output_size, num_outputs)
@@ -53,14 +57,38 @@ class Policy(nn.Module):
     def forward(self, inputs, rnn_hxs, masks):
         raise NotImplementedError
 
-    def act(self, inputs, rnn_hxs, masks, deterministic=False):
+    # def act(self, inputs, rnn_hxs, masks, deterministic=False):
+    #     if not hasattr(self, 'srnn'):
+    #         self.srnn = False
+    #     if self.srnn:
+    #         value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks, infer=True)
+
+    #     else:
+    #         value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks)
+    #     dist = self.dist(actor_features)
+
+    #     if deterministic:
+    #         action = dist.mode()
+    #     else:
+    #         action = dist.sample()
+
+    #     action_log_probs = dist.log_probs(action)
+    #     dist_entropy = dist.entropy().mean()
+
+    #     return value, action, action_log_probs, rnn_hxs
+
+    def act(self, inputs, deterministic=False):
         if not hasattr(self, 'srnn'):
             self.srnn = False
+
         if self.srnn:
-            value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks, infer=True)
+
+            value, actor_features = self.base(inputs, infer=True)
 
         else:
-            value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks)
+
+            value, actor_features = self.base(inputs)
+
         dist = self.dist(actor_features)
 
         if deterministic:
@@ -71,23 +99,31 @@ class Policy(nn.Module):
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
 
-        return value, action, action_log_probs, rnn_hxs
+        print(f'action in model {action}')
 
-    def get_value(self, inputs, rnn_hxs, masks):
+        return value, action, action_log_probs
 
-        value, _, _ = self.base(inputs, rnn_hxs, masks, infer=True)
+    # def get_value(self, inputs, rnn_hxs, masks):
+
+    #     value, _, _ = self.base(inputs, rnn_hxs, masks, infer=True)
+
+    #     return value
+
+    def get_value(self, inputs):
+
+        value, _ = self.base(inputs, infer=True)
 
         return value
 
-    def evaluate_actions(self, inputs, rnn_hxs, masks, action):
-        value, actor_features, rnn_hxs = self.base(inputs, rnn_hxs, masks)
-
+    def evaluate_actions(self, inputs, action):
+        value, actor_features = self.base(inputs)
         dist = self.dist(actor_features)
-
+        print(actor_features.size())
+        print(f'debug {action.size()}')
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
 
-        return value, action_log_probs, dist_entropy, rnn_hxs
+        return value, action_log_probs, dist_entropy
 
 
 

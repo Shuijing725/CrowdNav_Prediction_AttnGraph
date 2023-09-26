@@ -40,22 +40,22 @@ class CrowdSimVarNum(CrowdSim):
         # we set the max and min of action/observation space as inf
         # clip the action and observation as you need
 
-        d={}
-        # robot node: px, py, r, gx, gy, v_pref, theta
-        d['robot_node'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,7,), dtype = np.float32)
-        # only consider all temporal edges (human_num+1) and spatial edges pointing to robot (human_num)
-        d['temporal_edges'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, 2,), dtype=np.float32)
-        d['spatial_edges'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.max_human_num, 2), dtype=np.float32)
-        # number of humans detected at each timestep
-        d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, ), dtype=np.float32)
-        # whether each human is visible to robot (ordered by human ID, should not be sorted)
-        d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
-                                            shape=(self.max_human_num,),
-                                            dtype=np.bool)
-        self.observation_space=gym.spaces.Dict(d)
+        # d={}
+        # # robot node: px, py, r, gx, gy, v_pref, theta
+        # d['robot_node'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,7,), dtype = np.float32)
+        # # only consider all temporal edges (human_num+1) and spatial edges pointing to robot (human_num)
+        # d['temporal_edges'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, 2,), dtype=np.float32)
+        # d['spatial_edges'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.max_human_num, 2), dtype=np.float32)
+        # # number of humans detected at each timestep
+        # d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, ), dtype=np.float32)
+        # # whether each human is visible to robot (ordered by human ID, should not be sorted)
+        # d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
+        #                                     shape=(self.max_human_num,),
+        #                                     dtype=np.bool)
+        # self.observation_space=gym.spaces.Dict(d)
 
-        high = np.inf * np.ones([2, ])
-        self.action_space = gym.spaces.Box(-high, high, dtype=np.float32)
+        # high = np.inf * np.ones([2, ])
+        # self.action_space = gym.spaces.Box(-high, high, dtype=np.float32)
 
 
     # set robot initial state and generate all humans for reset function
@@ -231,48 +231,63 @@ class CrowdSimVarNum(CrowdSim):
     # reset = True: reset calls this function; reset = False: step calls this function
     # sorted: sort all humans by distance to robot or not
     def generate_ob(self, reset, sort=False):
-        """Generate observation for reset and step functions"""
+        
         ob = {}
 
-        # nodes
-        visible_humans, num_visibles, self.human_visibility = self.get_num_human_in_fov()
+        ob['robot_state'] = self.robot.get_full_state_list()
 
-        ob['robot_node'] = self.robot.get_full_state_list_noV()
+        print(ob['robot_state'])
 
-        prev_human_pos = copy.deepcopy(self.last_human_states)
-        self.update_last_human_states(self.human_visibility, reset=reset)
+        ob['robot_state'] = np.delete(ob['robot_state'], [5, 6])
 
-        # edges
-        ob['temporal_edges'] = np.array([self.robot.vx, self.robot.vy])
+        ob['goal_state'] = np.array([self.robot.gx, self.robot.gy])
 
-        # ([relative px, relative py, disp_x, disp_y], human id)
-        all_spatial_edges = np.ones((self.max_human_num, 2)) * np.inf
+        ob['human_state'] = np.ones((self.config.sim.human_num + self.config.sim.human_num_range, 5)) * np.inf
 
-        for i in range(self.human_num):
-            if self.human_visibility[i]:
-                # vector pointing from human i to robot
-                relative_pos = np.array(
-                    [self.last_human_states[i, 0] - self.robot.px, self.last_human_states[i, 1] - self.robot.py])
-                all_spatial_edges[self.humans[i].id, :2] = relative_pos
+        ob['human_state'] = np.array([human.get_observable_state() for human in self.humans])
 
-        ob['visible_masks'] = np.zeros(self.max_human_num, dtype=np.bool)
-        # sort all humans by distance (invisible humans will be in the end automatically)
-        if sort:
-            ob['spatial_edges'] = np.array(sorted(all_spatial_edges, key=lambda x: np.linalg.norm(x)))
-            # after sorting, the visible humans must be in the front
-            if num_visibles > 0:
-                ob['visible_masks'][:num_visibles] = True
-        else:
-            ob['spatial_edges'] = all_spatial_edges
-            ob['visible_masks'][:self.human_num] = self.human_visibility
-        ob['spatial_edges'][np.isinf(ob['spatial_edges'])] = 15
-        ob['detected_human_num'] = num_visibles
-        # if no human is detected, assume there is one dummy human at (15, 15) to make the pack_padded_sequence work
-        if ob['detected_human_num'] == 0:
-            ob['detected_human_num'] = 1
 
-        # update self.observed_human_ids
-        self.observed_human_ids = np.where(self.human_visibility)[0]
+        # ob = {}
+        #
+        # # nodes
+        # visible_humans, num_visibles, self.human_visibility = self.get_num_human_in_fov()
+        #
+        # ob['robot_node'] = self.robot.get_full_state_list_noV()
+        #
+        # prev_human_pos = copy.deepcopy(self.last_human_states)
+        # self.update_last_human_states(self.human_visibility, reset=reset)
+        #
+        # # edges
+        # ob['temporal_edges'] = np.array([self.robot.vx, self.robot.vy])
+        #
+        # # ([relative px, relative py, disp_x, disp_y], human id)
+        # all_spatial_edges = np.ones((self.max_human_num, 2)) * np.inf
+        #
+        # for i in range(self.human_num):
+        #     if self.human_visibility[i]:
+        #         # vector pointing from human i to robot
+        #         relative_pos = np.array(
+        #             [self.last_human_states[i, 0] - self.robot.px, self.last_human_states[i, 1] - self.robot.py])
+        #         all_spatial_edges[self.humans[i].id, :2] = relative_pos
+        #
+        # ob['visible_masks'] = np.zeros(self.max_human_num, dtype=np.bool)
+        # # sort all humans by distance (invisible humans will be in the end automatically)
+        # if sort:
+        #     ob['spatial_edges'] = np.array(sorted(all_spatial_edges, key=lambda x: np.linalg.norm(x)))
+        #     # after sorting, the visible humans must be in the front
+        #     if num_visibles > 0:
+        #         ob['visible_masks'][:num_visibles] = True
+        # else:
+        #     ob['spatial_edges'] = all_spatial_edges
+        #     ob['visible_masks'][:self.human_num] = self.human_visibility
+        # ob['spatial_edges'][np.isinf(ob['spatial_edges'])] = 15
+        # ob['detected_human_num'] = num_visibles
+        # # if no human is detected, assume there is one dummy human at (15, 15) to make the pack_padded_sequence work
+        # if ob['detected_human_num'] == 0:
+        #     ob['detected_human_num'] = 1
+        #
+        # # update self.observed_human_ids
+        # self.observed_human_ids = np.where(self.human_visibility)[0]
 
         self.ob = ob
 
@@ -383,9 +398,9 @@ class CrowdSimVarNum(CrowdSim):
         human_actions = self.get_human_actions()
 
         # need to update self.human_future_traj in testing to calculate number of intrusions
-        if self.phase == 'test':
-            # use ground truth future positions of humans
-            self.calc_human_future_traj(method='truth')
+        # if self.phase == 'test':
+        #     # use ground truth future positions of humans
+        #     self.calc_human_future_traj(method='truth')
 
         # compute reward and episode info
         reward, done, episode_info = self.calc_reward(action, danger_zone='future')
@@ -493,22 +508,22 @@ class CrowdSimVarNum(CrowdSim):
             np.array(self.robot.get_position()) - np.array(self.robot.get_goal_position())) < goal_radius
 
         # use danger_zone to determine the condition for Danger
-        if danger_zone == 'circle' or self.phase == 'train':
-            danger_cond = dmin < self.discomfort_dist
-            min_danger_dist = 0
-        else:
-            # if the robot collides with future states, give it a collision penalty
-            relative_pos = self.human_future_traj[1:, :, :2] - np.array([self.robot.px, self.robot.py])
-            relative_dist = np.linalg.norm(relative_pos, axis=-1)
+        # if danger_zone == 'circle' or self.phase == 'train':
+        #     danger_cond = dmin < self.discomfort_dist
+        #     min_danger_dist = 0
+        # else:
+        #     # if the robot collides with future states, give it a collision penalty
+        #     relative_pos = self.human_future_traj[1:, :, :2] - np.array([self.robot.px, self.robot.py])
+        #     relative_dist = np.linalg.norm(relative_pos, axis=-1)
 
-            collision_idx = relative_dist < self.robot.radius + self.config.humans.radius  # [predict_steps, human_num]
+        #     collision_idx = relative_dist < self.robot.radius + self.config.humans.radius  # [predict_steps, human_num]
 
-            danger_cond = np.any(collision_idx)
-            # if robot is dangerously close to any human, calculate the min distance between robot and its closest human
-            if danger_cond:
-                min_danger_dist = np.amin(relative_dist[collision_idx])
-            else:
-                min_danger_dist = 0
+        #     danger_cond = np.any(collision_idx)
+        #     # if robot is dangerously close to any human, calculate the min distance between robot and its closest human
+        #     if danger_cond:
+        #         min_danger_dist = np.amin(relative_dist[collision_idx])
+        #     else:
+        #         min_danger_dist = 0
 
         if self.global_time >= self.time_limit - 1:
             reward = 0
@@ -523,13 +538,13 @@ class CrowdSimVarNum(CrowdSim):
             done = True
             episode_info = ReachGoal()
 
-        elif danger_cond:
-            # only penalize agent for getting too close if it's visible
-            # adjust the reward based on FPS
-            # print(dmin)
-            reward = (dmin - self.discomfort_dist) * self.discomfort_penalty_factor * self.time_step
-            done = False
-            episode_info = Danger(min_danger_dist)
+        # elif danger_cond:
+        #     # only penalize agent for getting too close if it's visible
+        #     # adjust the reward based on FPS
+        #     # print(dmin)
+        #     reward = (dmin - self.discomfort_dist) * self.discomfort_penalty_factor * self.time_step
+        #     done = False
+        #     episode_info = Danger(min_danger_dist)
 
         else:
             # potential reward

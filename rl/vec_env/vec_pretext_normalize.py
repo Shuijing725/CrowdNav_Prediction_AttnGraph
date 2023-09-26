@@ -40,14 +40,15 @@ class VecPretextNormalize(VecEnvWrapper):
         self.epsilon = epsilon
 
         # load and configure the prediction model
-        load_path = os.path.join(os.getcwd(), self.config.pred.model_dir)
-        if not os.path.isdir(load_path):
-            raise RuntimeError('The result directory was not found.')
-        checkpoint_dir = os.path.join(load_path, 'checkpoint')
-        with open(os.path.join(checkpoint_dir, 'args.pickle'), 'rb') as f:
-            self.args = pickle.load(f)
+        #load_path = os.path.join(os.getcwd(), self.config.pred.model_dir)
+        # if not os.path.isdir(load_path):
+        #     raise RuntimeError('The result directory was not found.')
+        # checkpoint_dir = os.path.join(load_path, 'checkpoint')
+        # with open(os.path.join(checkpoint_dir, 'args.pickle'), 'rb') as f:
+        #     self.args = pickle.load(f)
 
-        self.predictor = CrowdNavPredInterfaceMultiEnv(load_path=load_path, device=self.device, config = self.args, num_env = self.num_envs)
+        #uplc comment: not using predictor
+        #self.predictor = CrowdNavPredInterfaceMultiEnv(load_path=load_path, device=self.device, config = self.args, num_env = self.num_envs)
 
         temperature_scheduler = Temp_Scheduler(self.args.num_epochs, self.args.init_temp, self.args.init_temp, temp_min=0.03)
         self.tau = temperature_scheduler.decay_whole_process(epoch=100)
@@ -128,8 +129,8 @@ class VecPretextNormalize(VecEnvWrapper):
         in_mask = in_mask[:, :, ::self.pred_interval]
 
         # forward predictor model
-        out_traj, out_mask = self.predictor.forward(input_traj=in_traj, input_binary_mask=in_mask)
-        out_mask = out_mask.bool()
+        #out_traj, out_mask = self.predictor.forward(input_traj=in_traj, input_binary_mask=in_mask)
+        #out_mask = out_mask.bool()
 
         # add penalties if the robot collides with predicted future pos of humans
         # deterministic reward, only uses mu_x, mu_y and a predefined radius

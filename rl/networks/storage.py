@@ -12,14 +12,13 @@ def _flatten_helper(T, N, _tensor):
 
 class RolloutStorage(object):
     """ The rollout buffer to store the agent's experience for PPO """
-    def __init__(self, num_steps, num_processes, obs_shape, action_space,
-                 human_node_rnn_size, human_human_edge_rnn_size):
+    def __init__(self, num_steps, num_processes, obs_shape, action_space):
 
         if isinstance(obs_shape, dict):
             self.obs = {}
             for key in obs_shape:
                 self.obs[key] = torch.zeros(num_steps + 1, num_processes, *(obs_shape[key].shape))
-            self.human_num = obs_shape['spatial_edges'].shape[0]
+            self.human_num = obs_shape['human_state'].shape[0]
         else:
             self.obs = torch.zeros(num_steps + 1, num_processes, *obs_shape)
 
@@ -30,8 +29,8 @@ class RolloutStorage(object):
         edge_num = self.human_num + 1
         # edge_num = 2
 
-        self.recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_steps + 1, num_processes, node_num, human_node_rnn_size)
-        self.recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_steps + 1, num_processes, edge_num, human_human_edge_rnn_size)
+        # self.recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_steps + 1, num_processes, node_num, human_node_rnn_size)
+        # self.recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_steps + 1, num_processes, edge_num, human_human_edge_rnn_size)
 
         self.rewards = torch.zeros(num_steps, num_processes, 1)
         self.value_preds = torch.zeros(num_steps + 1, num_processes, 1)
@@ -56,8 +55,9 @@ class RolloutStorage(object):
     def to(self, device):
         for key in self.obs:
             self.obs[key] = self.obs[key].to(device)
-        for key in self.recurrent_hidden_states:
-            self.recurrent_hidden_states[key] = self.recurrent_hidden_states[key].to(device)
+
+        # for key in self.recurrent_hidden_states:
+        #     self.recurrent_hidden_states[key] = self.recurrent_hidden_states[key].to(device)
 
         self.rewards = self.rewards.to(device)
         self.value_preds = self.value_preds.to(device)
@@ -67,14 +67,14 @@ class RolloutStorage(object):
         self.masks = self.masks.to(device)
         self.bad_masks = self.bad_masks.to(device)
 
-    def insert(self, obs, recurrent_hidden_states, actions, action_log_probs,
+    def insert(self, obs, actions, action_log_probs,
                value_preds, rewards, masks, bad_masks):
-
 
         for key in self.obs:
             self.obs[key][self.step + 1].copy_(obs[key])
-        for key in recurrent_hidden_states:
-            self.recurrent_hidden_states[key][self.step + 1].copy_(recurrent_hidden_states[key])
+
+        # for key in recurrent_hidden_states:
+        #     self.recurrent_hidden_states[key][self.step + 1].copy_(recurrent_hidden_states[key])
 
         self.actions[self.step].copy_(actions)
         self.action_log_probs[self.step].copy_(action_log_probs)
@@ -178,8 +178,8 @@ class RolloutStorage(object):
             else:
                 adv_targ = advantages.view(-1, 1)[indices]
 
-            yield obs_batch, recurrent_hidden_states_batch, actions_batch, \
-                value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, adv_targ
+            yield obs_batch, actions_batch, \
+                value_preds_batch, return_batch, old_action_log_probs_batch, adv_targ
 
     def recurrent_generator(self, advantages, num_mini_batch):
         num_processes = self.rewards.size(1)
@@ -249,5 +249,5 @@ class RolloutStorage(object):
                     old_action_log_probs_batch)
             adv_targ = _flatten_helper(T, N, adv_targ)
 
-            yield obs_batch, recurrent_hidden_states_batch, actions_batch, \
-                value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, adv_targ
+            yield obs_batch, actions_batch, \
+                value_preds_batch, return_batch, old_action_log_probs_batch, adv_targ

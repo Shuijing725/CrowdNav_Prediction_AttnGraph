@@ -133,9 +133,9 @@ class CrowdSimPred(CrowdSimVarNum):
         human_actions = self.get_human_actions()
 
         # need to update self.human_future_traj in testing to calculate number of intrusions
-        if self.phase == 'test':
-            # use ground truth future positions of humans
-            self.calc_human_future_traj(method='truth')
+        # if self.phase == 'test':
+        #     # use ground truth future positions of humans
+        #     self.calc_human_future_traj(method='truth')
 
         # compute reward and episode info
         reward, done, episode_info = self.calc_reward(action, danger_zone='future')

@@ -97,9 +97,7 @@ def main():
 	rollouts = RolloutStorage(algo_args.num_steps,
 							  algo_args.num_processes,
 							  envs.observation_space.spaces,
-							  envs.action_space,
-							  algo_args.human_node_rnn_size,
-							  algo_args.human_human_edge_rnn_size)
+							  envs.action_space)
 
 	# continue training from an existing model if resume = True
 	if algo_args.resume:
@@ -122,8 +120,6 @@ def main():
 		lr=algo_args.lr,
 		eps=algo_args.eps,
 		max_grad_norm=algo_args.max_grad_norm)
-
-
 
 	obs = envs.reset()
 	if isinstance(obs, dict):
@@ -157,25 +153,28 @@ def main():
 				for key in rollouts.obs:
 					rollouts_obs[key] = rollouts.obs[key][step]
 				rollouts_hidden_s = {}
-				for key in rollouts.recurrent_hidden_states:
-					rollouts_hidden_s[key] = rollouts.recurrent_hidden_states[key][step]
-				value, action, action_log_prob, recurrent_hidden_states = actor_critic.act(
-					rollouts_obs, rollouts_hidden_s,
-					rollouts.masks[step])
+
+				# for key in rollouts.recurrent_hidden_states:
+				# 	rollouts_hidden_s[key] = rollouts.recurrent_hidden_states[key][step]
+
+				value, action, action_log_prob = actor_critic.act(
+					rollouts_obs)
+
+				# value, action, action_log_prob = actor_critic.act(
+				# 	rollouts_obs)
 
 			# if we use real prediction, send predictions to env for rendering
-			if env_name == 'CrowdSimPredRealGST-v0' and env_config.env.use_wrapper:
-				# [nenv, max_human_num, 2*(pred_steps+1)] -> [nenv, max_human_num, 2*pred_steps]
-				out_pred = rollouts_obs['spatial_edges'][:, :, 2:].to('cpu').numpy()
-				# send manager action to all processes
-				ack = envs.talk2Env(out_pred)
-				assert all(ack)
+			# if env_name == 'CrowdSimAlpha' and env_config.env.use_wrapper:
+			# 	# [nenv, max_human_num, 2*(pred_steps+1)] -> [nenv, max_human_num, 2*pred_steps]
+			# 	out_pred = rollouts_obs['spatial_edges'][:, :, 2:].to('cpu').numpy()
+			# 	# send manager action to all processes
+			# 	ack = envs.talk2Env(out_pred)
+			# 	assert all(ack)
 
 			if config.sim.render:
 				envs.render()
 			# Obser reward and next obs
 			obs, reward, done, infos = envs.step(action)
-
 
 			for info in infos:
 				if 'episode' in info.keys():
@@ -187,19 +186,20 @@ def main():
 			bad_masks = torch.FloatTensor(
 				[[0.0] if 'bad_transition' in info.keys() else [1.0]
 				 for info in infos])
-			rollouts.insert(obs, recurrent_hidden_states, action,
-							action_log_prob, value, reward, masks, bad_masks)
+			print(f'value in training: {value}')
+			rollouts.insert(obs, action, action_log_prob, value, reward, masks, bad_masks)
+
 		# store the stepped experience to buffer
 		with torch.no_grad():
 			rollouts_obs = {}
 			for key in rollouts.obs:
 				rollouts_obs[key] = rollouts.obs[key][-1]
-			rollouts_hidden_s = {}
-			for key in rollouts.recurrent_hidden_states:
-				rollouts_hidden_s[key] = rollouts.recurrent_hidden_states[key][-1]
+
+			# for key in rollouts.recurrent_hidden_states:
+			# 	rollouts_hidden_s[key] = rollouts.recurrent_hidden_states[key][-1]
+
 			next_value = actor_critic.get_value(
-				rollouts_obs, rollouts_hidden_s,
-				rollouts.masks[-1]).detach()
+				rollouts_obs).detach()
 
 		# compute advantage and gradient, and update the network parameters
 		rollouts.compute_returns(next_value, algo_args.use_gae, algo_args.gamma,
