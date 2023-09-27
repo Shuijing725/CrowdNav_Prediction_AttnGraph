@@ -82,10 +82,14 @@ class Policy(nn.Module):
         if self.srnn:
 
             value, actor_features = self.base(inputs, infer=True)
+            #print(f'srnn {self.srnn}')
 
         else:
 
             value, actor_features = self.base(inputs)
+            #print(f'srnn {self.srnn}')
+
+        #print(f'actor_features size {actor_features.dim()}')
 
         dist = self.dist(actor_features)
 

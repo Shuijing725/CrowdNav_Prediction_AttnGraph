@@ -34,6 +34,7 @@ class AddBias(nn.Module):
         self._bias = nn.Parameter(bias.unsqueeze(1))
 
     def forward(self, x):
+        #print(f'debug x dim: {x.dim()}')
         if x.dim() == 2:
             bias = self._bias.t().view(1, -1)
         else:

@@ -413,15 +413,26 @@ class All_Attn(nn.Module):
         trans_joint_v = joint_v.transpose(-2, -1)
 
         if trans_joint_v.shape[0] == 30:
-            trans_joint_v = trans_joint_v.squeeze(1)
-            attn = attn.squeeze(1)
+            if trans_joint_v.shape[1] == 8:
+                #trans_joint_v = trans_joint_v.squeeze(1)
+                trans_joint_v = trans_joint_v.view(-1, 256, 20)
+                #attn = attn.squeeze(1)
+                attn = attn.view(-1, 20, 1)
+                weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1)
+            else:
+                trans_joint_v = trans_joint_v.squeeze(1)
+                attn = attn.squeeze(1)
+                weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1).unsqueeze(1)
             # print(f'trans_joint_v size: {trans_joint_v.size()}')
             # print(f'attn size: {attn.size()}')
-            weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1).unsqueeze(1)
         else:
             weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1)
+            
+        # print(f': {weighted_value.size()}')
+        # print(f'robot_node size: {robot_node.size()}')
 
-        #print(f'weighted_value size: {weighted_value.size()}')
+        if robot_node.shape[1] == 8:
+            robot_node = robot_node.view(-1, 1, 7)
 
         outputs = self.end_layer(torch.cat((weighted_value, robot_node), -1))
 
@@ -437,9 +448,12 @@ class All_Attn(nn.Module):
         hidden_actor = self.actor(x)
         #print(f'hidden_actor size: {hidden_actor.size()}')
 
+        #print(f'output size {hidden_actor.view(-1, self.output_size).dim()}')
+        #print(f'output action size: {hidden_actor.squeeze(0).view(-1, self.output_size).size()}')
+        #print(f'output value size: {self.critic_linear(hidden_critic).squeeze(0).view(-1, 1).size()}')
+
         if infer:
-            #print(f'output size {hidden_actor.squeeze(0).size()}')
-            return self.critic_linear(hidden_critic).squeeze(0), hidden_actor.squeeze(0)
+            return self.critic_linear(hidden_critic).squeeze(0).view(-1, 1), hidden_actor.squeeze(0).view(-1, self.output_size)
         else:
             return self.critic_linear(hidden_critic).view(-1, 1), hidden_actor.view(-1, self.output_size)
 
