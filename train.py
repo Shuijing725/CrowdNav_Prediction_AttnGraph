@@ -186,7 +186,6 @@ def main():
 			bad_masks = torch.FloatTensor(
 				[[0.0] if 'bad_transition' in info.keys() else [1.0]
 				 for info in infos])
-			print(f'value in training: {value}')
 			rollouts.insert(obs, action, action_log_prob, value, reward, masks, bad_masks)
 
 		# store the stepped experience to buffer

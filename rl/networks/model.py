@@ -35,9 +35,7 @@ class Policy(nn.Module):
             num_outputs = action_space.n
             self.dist = Categorical(self.base.output_size, num_outputs)
         elif action_space.__class__.__name__ == "Box":
-            print(f'num_outputs: {action_space.shape[0]}')
             num_outputs = action_space.shape[0]
-
             self.dist = DiagGaussian(self.base.output_size, num_outputs)
         elif action_space.__class__.__name__ == "MultiBinary":
             num_outputs = action_space.shape[0]
@@ -99,7 +97,7 @@ class Policy(nn.Module):
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
 
-        print(f'action in model {action}')
+        #print(f'action in model {action}')
 
         return value, action, action_log_probs
 
@@ -118,8 +116,6 @@ class Policy(nn.Module):
     def evaluate_actions(self, inputs, action):
         value, actor_features = self.base(inputs)
         dist = self.dist(actor_features)
-        print(actor_features.size())
-        print(f'debug {action.size()}')
         action_log_probs = dist.log_probs(action)
         dist_entropy = dist.entropy().mean()
 

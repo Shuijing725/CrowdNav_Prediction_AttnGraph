@@ -327,11 +327,16 @@ class All_Attn(nn.Module):
         # uplc network for test
         self.relu = nn.ReLU()
 
-        self.robot_layer = nn.Linear(in_features=7, out_features=64)
-        self.goal_layer = nn.Linear(in_features=2, out_features=64)
-        self.human_layer = nn.Linear(in_features=5, out_features=128)
+        self.qh_linear = nn.Linear(in_features=7, out_features=128)
+        self.qg_linear = nn.Linear(in_features=7, out_features=128)
 
-        self.end_layer = nn.Linear(in_features=256, out_features=256)
+        self.kh_linear = nn.Linear(in_features=5, out_features=128)
+        self.kg_linear = nn.Linear(in_features=2, out_features=128)
+
+        self.vh_linear = nn.Linear(in_features=5, out_features=128)
+        self.vg_linear = nn.Linear(in_features=2, out_features=128)
+
+        self.end_layer = nn.Linear(in_features=263, out_features=256)
 
         num_inputs = hidden_size = self.output_size
 
@@ -359,7 +364,7 @@ class All_Attn(nn.Module):
             self.dummy_human_mask = Variable(torch.Tensor([dummy_human_mask]).cuda())
 
     def forward(self, inputs, infer=False):
-        print(f'forward infer: {infer}')
+        #print(f'forward infer: {infer}')
         if infer:
             # Test/rollout time
             seq_length = 1
@@ -370,10 +375,6 @@ class All_Attn(nn.Module):
             seq_length = self.seq_length
             nenv = self.nenv // self.nminibatch
 
-        # robot_node = reshapeT(inputs['robot_node'], seq_length, nenv)
-        # temporal_edges = reshapeT(inputs['temporal_edges'], seq_length, nenv)
-        # spatial_edges = reshapeT(inputs['spatial_edges'], seq_length, nenv)
-
         robot_node = reshapeT(inputs['robot_state'], seq_length, nenv).squeeze(0)
         goal_node = reshapeT(inputs['goal_state'], seq_length, nenv).squeeze(0)
         human_node = reshapeT(inputs['human_state'], seq_length, nenv).squeeze(0)
@@ -382,105 +383,59 @@ class All_Attn(nn.Module):
         # print(f'goal node size: {goal_node.shape}')
         # print(f'human node size: {human_node.shape}')
         
-        robot_node = self.robot_layer(robot_node.repeat_interleave(20, -2))
-        #robot_node = nn.ReLU(robot_node)
-        robot_node = self.relu(robot_node)
+        q_h = self.qh_linear(robot_node.repeat_interleave(20, -2))
+        q_h = self.relu(q_h)
 
-        goal_node = self.goal_layer(goal_node.repeat_interleave(20, -2))
-        #goal_node = nn.ReLU(goal_node)
-        goal_node = self.relu(goal_node)
+        q_g = self.qg_linear(robot_node.repeat_interleave(20, -2))
+        q_g = self.relu(q_g)
 
-        human_node = self.human_layer(human_node)
-        #human_node = nn.ReLU(human_node)
-        human_node = self.relu(human_node)
+        k_h = self.kh_linear(human_node)
+        k_h = self.relu(k_h)
 
-        # print(f'robot node size: {robot_node.size()}')
-        # print(f'goal node size: {goal_node.size()}')
-        # print(f'human node size: {human_node.size()}')
+        k_g = self.kg_linear(goal_node.repeat_interleave(20, -2))
+        k_g = self.relu(k_g)
 
-        outputs = self.end_layer(torch.cat((robot_node, goal_node, human_node), -1))
+        v_h = self.vh_linear(human_node)
+        v_h = self.relu(v_h)
 
-        # print(f'output node size: {outputs.shape}')
+        v_g = self.vg_linear(goal_node.repeat_interleave(20, -2))
+        v_g = self.relu(v_g)
 
-        # # to prevent errors in old models that does not have sort_humans argument
-        # if not hasattr(self.args, 'sort_humans'):
-        #     self.args.sort_humans = True
-        # if self.args.sort_humans:
-        #     detected_human_num = inputs['detected_human_num'].squeeze(-1).cpu().int()
-        # else:
-        #     human_masks = reshapeT(inputs['visible_masks'], seq_length, nenv).float() # [seq_len, nenv, max_human_num]
-        #     # if no human is detected (human_masks are all False, set the first human to True)
-        #     human_masks[human_masks.sum(dim=-1)==0] = self.dummy_human_mask
+        alpha_h = q_h * k_h
+        alpha_g = q_g * k_g
 
+        attn = torch.cat((alpha_h, alpha_g), -1)
+        attn = torch.sum(attn, dim=-1)
+        attn = torch.nn.functional.softmax(attn, dim=-1).unsqueeze(-1)
+        
+        joint_v = torch.cat((v_h, v_g), -1)
 
-        # hidden_states_node_RNNs = reshapeT(rnn_hxs['human_node_rnn'], 1, nenv)
-        # masks = reshapeT(masks, seq_length, nenv)
+        trans_joint_v = joint_v.transpose(-2, -1)
 
+        if trans_joint_v.shape[0] == 30:
+            trans_joint_v = trans_joint_v.squeeze(1)
+            attn = attn.squeeze(1)
+            # print(f'trans_joint_v size: {trans_joint_v.size()}')
+            # print(f'attn size: {attn.size()}')
+            weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1).unsqueeze(1)
+        else:
+            weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1)
 
-        # if self.args.no_cuda:
-        #     all_hidden_states_edge_RNNs = Variable(
-        #         torch.zeros(1, nenv, 1+self.human_num, rnn_hxs['human_human_edge_rnn'].size()[-1]).cpu())
-        # else:
-        #     all_hidden_states_edge_RNNs = Variable(
-        #         torch.zeros(1, nenv, 1+self.human_num, rnn_hxs['human_human_edge_rnn'].size()[-1]).cuda())
+        #print(f'weighted_value size: {weighted_value.size()}')
 
-        # robot_states = torch.cat((temporal_edges, robot_node), dim=-1)
-        # robot_states = self.robot_linear(robot_states)
+        outputs = self.end_layer(torch.cat((weighted_value, robot_node), -1))
 
-
-        # # attention modules
-        # if self.args.sort_humans:
-        #     # human-human attention
-        #     if self.args.use_self_attn:
-        #         spatial_attn_out=self.spatial_attn(spatial_edges, detected_human_num).view(seq_length, nenv, self.human_num, -1)
-        #     else:
-        #         spatial_attn_out = spatial_edges
-        #     output_spatial = self.spatial_linear(spatial_attn_out)
-
-        #     # robot-human attention
-        #     hidden_attn_weighted, _ = self.attn(robot_states, output_spatial, detected_human_num)
-        # else:
-        #     # human-human attention
-        #     if self.args.use_self_attn:
-        #         spatial_attn_out = self.spatial_attn(spatial_edges, human_masks).view(seq_length, nenv, self.human_num, -1)
-        #     else:
-        #         spatial_attn_out = spatial_edges
-        #     output_spatial = self.spatial_linear(spatial_attn_out)
-
-        #     # robot-human attention
-        #     hidden_attn_weighted, _ = self.attn(robot_states, output_spatial, human_masks)
-
-
-        # # Do a forward pass through GRU
-        # outputs, h_nodes \
-        #     = self.humanNodeRNN(robot_states, hidden_attn_weighted, hidden_states_node_RNNs, masks)
-
-
-        # # Update the hidden and cell states
-        # all_hidden_states_node_RNNs = h_nodes
-        #outputs_return = outputs
         x = outputs
-        # print(f'output size: {outputs.size()}')
 
-        # rnn_hxs['human_node_rnn'] = all_hidden_states_node_RNNs
-        # rnn_hxs['human_human_edge_rnn'] = all_hidden_states_edge_RNNs
-
+        #print(f'output size: {outputs.size()}')
 
         # # x is the output and will be sent to actor and critic
         #x = outputs_return[:, :, 0, :]
 
-        hidden_critic = self.critic(x.mean([-2]).unsqueeze(1))
+        hidden_critic = self.critic(x)
         #print(x.mean([1]).unsqueeze(1).size())
-        hidden_actor = self.actor(x.mean([-2]).unsqueeze(1))
-
-        print(f'hidden_actor size: {hidden_actor.size()}')
-
-        # hidden_critic = self.critic(x)
-        # #print(x.mean([1]).unsqueeze(1).size())
-        # hidden_actor = self.actor(x)
-
-        # for key in rnn_hxs:
-        #     rnn_hxs[key] = rnn_hxs[key].squeeze(0)
+        hidden_actor = self.actor(x)
+        #print(f'hidden_actor size: {hidden_actor.size()}')
 
         if infer:
             #print(f'output size {hidden_actor.squeeze(0).size()}')

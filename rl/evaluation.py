@@ -13,12 +13,13 @@ def evaluate(actor_critic, eval_envs, num_processes, device, test_size, logging,
 
     node_num = 1
     edge_num = actor_critic.base.human_num + 1
-    eval_recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_processes, node_num, actor_critic.base.human_node_rnn_size,
-                                                                 device=device)
 
-    eval_recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_processes, edge_num,
-                                                                       actor_critic.base.human_human_edge_rnn_size,
-                                                                       device=device)
+    # eval_recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_processes, node_num, actor_critic.base.human_node_rnn_size,
+    #                                                              device=device)
+
+    # eval_recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_processes, edge_num,
+    #                                                                    actor_critic.base.human_human_edge_rnn_size,
+    #                                                                    device=device)
 
     eval_masks = torch.zeros(num_processes, 1, device=device)
 
@@ -55,27 +56,25 @@ def evaluate(actor_critic, eval_envs, num_processes, device, test_size, logging,
         global_time = 0.0
         path_len = 0.
         too_close = 0.
-        last_pos = obs['robot_node'][0, 0, :2].cpu().numpy()
+        last_pos = obs['robot_state'][0, 0, :2].cpu().numpy()
 
 
         while not done:
             stepCounter = stepCounter + 1
             # run inference on the NN policy
             with torch.no_grad():
-                _, action, _, eval_recurrent_hidden_states = actor_critic.act(
+                _, action, _ = actor_critic.act(
                     obs,
-                    eval_recurrent_hidden_states,
-                    eval_masks,
                     deterministic=True)
             if not done:
                 global_time = baseEnv.global_time
 
             # if the vec_pretext_normalize.py wrapper is used, send the predicted traj to env
-            if args.env_name == 'CrowdSimPredRealGST-v0' and config.env.use_wrapper:
-                out_pred = obs['spatial_edges'][:, :, 2:].to('cpu').numpy()
-                # send manager action to all processes
-                ack = eval_envs.talk2Env(out_pred)
-                assert all(ack)
+            # if args.env_name == 'CrowdSimAllAttn-v0' and config.env.use_wrapper:
+            #     out_pred = obs['spatial_edges'][:, :, 2:].to('cpu').numpy()
+            #     # send manager action to all processes
+            #     ack = eval_envs.talk2Env(out_pred)
+            #     assert all(ack)
             # render
             if visualize:
                 eval_envs.render()
@@ -86,8 +85,8 @@ def evaluate(actor_critic, eval_envs, num_processes, device, test_size, logging,
             # record the info for calculating testing metrics
             rewards.append(rew)
 
-            path_len = path_len + np.linalg.norm(obs['robot_node'][0, 0, :2].cpu().numpy() - last_pos)
-            last_pos = obs['robot_node'][0, 0, :2].cpu().numpy()
+            path_len = path_len + np.linalg.norm(obs['robot_state'][0, 0, :2].cpu().numpy() - last_pos)
+            last_pos = obs['robot_state'][0, 0, :2].cpu().numpy()
 
 
             if isinstance(infos[0]['info'], Danger):

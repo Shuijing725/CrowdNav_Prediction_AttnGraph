@@ -20,13 +20,13 @@ def main():
 	# the following parameters will be determined for each test run
 	parser = argparse.ArgumentParser('Parse configuration file')
 	# the model directory that we are testing
-	parser.add_argument('--model_dir', type=str, default='trained_models/GST_predictor_rand')
+	parser.add_argument('--model_dir', type=str, default='trained_models/my_model')
 	# render the environment or not
-	parser.add_argument('--visualize', default=False, action='store_true')
+	parser.add_argument('--visualize', default=True, action='store_true')
 	# if -1, it will run 500 different cases; if >=0, it will run the specified test case repeatedly
 	parser.add_argument('--test_case', type=int, default=-1)
 	# model weight file you want to test
-	parser.add_argument('--test_model', type=str, default='41665.pt')
+	parser.add_argument('--test_model', type=str, default='00800.pt')
 	# whether to save trajectories of episodes
 	parser.add_argument('--render_traj', default=False, action='store_true')
 	# whether to save slide show of episodes

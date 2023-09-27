@@ -236,8 +236,6 @@ class CrowdSimVarNum(CrowdSim):
 
         ob['robot_state'] = self.robot.get_full_state_list()
 
-        print(ob['robot_state'])
-
         ob['robot_state'] = np.delete(ob['robot_state'], [5, 6])
 
         ob['goal_state'] = np.array([self.robot.gx, self.robot.gy])
