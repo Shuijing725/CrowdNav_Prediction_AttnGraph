@@ -327,6 +327,8 @@ class All_Attn(nn.Module):
         # uplc network for test
         self.relu = nn.ReLU()
 
+        self.msa = torch.nn.MultiheadAttention(128, 8)
+
         self.qh_linear = nn.Linear(in_features=7, out_features=128)
         self.qg_linear = nn.Linear(in_features=7, out_features=128)
 
@@ -336,7 +338,11 @@ class All_Attn(nn.Module):
         self.vh_linear = nn.Linear(in_features=5, out_features=128)
         self.vg_linear = nn.Linear(in_features=2, out_features=128)
 
-        self.end_layer = nn.Linear(in_features=263, out_features=256)
+        self.qhm_linear = nn.Linear(in_features=128, out_features=128)
+        self.khm_linear = nn.Linear(in_features=128, out_features=128)
+        self.vhm_linear = nn.Linear(in_features=128, out_features=128)
+
+        self.end_layer = nn.Linear(in_features=135, out_features=256)
 
         num_inputs = hidden_size = self.output_size
 
@@ -347,7 +353,6 @@ class All_Attn(nn.Module):
         self.critic = nn.Sequential(
             init_(nn.Linear(num_inputs, hidden_size)), nn.Tanh(),
             init_(nn.Linear(hidden_size, hidden_size)), nn.Tanh())
-
 
         self.critic_linear = init_(nn.Linear(hidden_size, 1))
 
@@ -383,41 +388,83 @@ class All_Attn(nn.Module):
         # print(f'goal node size: {goal_node.shape}')
         # print(f'human node size: {human_node.shape}')
         
-        q_h = self.qh_linear(robot_node.repeat_interleave(20, -2))
+        q_h = self.qh_linear(robot_node.repeat_interleave(self.human_num, -2))
         q_h = self.relu(q_h)
 
-        q_g = self.qg_linear(robot_node.repeat_interleave(20, -2))
+        q_g = self.qg_linear(robot_node)
         q_g = self.relu(q_g)
 
         k_h = self.kh_linear(human_node)
+
+        if k_h.shape[0] == 30:
+            #print(f'k_h size: {k_h.size()}')
+            k_h = k_h.view(-1, 5, 128)
+            q_h_m = self.qhm_linear(k_h)
+            q_h_m = self.relu(q_h_m)
+            k_h_m = self.khm_linear(k_h)
+            k_h_m = self.relu(k_h_m)
+            v_h_m = self.vhm_linear(k_h)
+            v_h_m = self.relu(v_h_m)
+
+            k_h,_ = self.msa(q_h_m, k_h_m, v_h_m)
+            k_h = k_h.view(-1, 8, 5, 128)
+        else:
+            #print(f'k_h size: {k_h.size()}')
+            q_h_m = self.qhm_linear(k_h)
+            q_h_m = self.relu(q_h_m)
+            k_h_m = self.khm_linear(k_h)
+            k_h_m = self.relu(k_h_m)
+            v_h_m = self.vhm_linear(k_h)
+            v_h_m = self.relu(v_h_m)
+
+            k_h,_ = self.msa(q_h_m, k_h_m, v_h_m)
+
         k_h = self.relu(k_h)
 
-        k_g = self.kg_linear(goal_node.repeat_interleave(20, -2))
+        k_g = self.kg_linear(goal_node)
         k_g = self.relu(k_g)
 
         v_h = self.vh_linear(human_node)
         v_h = self.relu(v_h)
 
-        v_g = self.vg_linear(goal_node.repeat_interleave(20, -2))
+        v_g = self.vg_linear(goal_node)
         v_g = self.relu(v_g)
 
         alpha_h = q_h * k_h
         alpha_g = q_g * k_g
 
-        attn = torch.cat((alpha_h, alpha_g), -1)
+        # print(f'alpha_h size: {alpha_h.size()}')
+        # print(f'alpha_g size: {alpha_g.size()}')
+
+        attn = torch.cat((alpha_h, alpha_g), -2)
         attn = torch.sum(attn, dim=-1)
-        attn = torch.nn.functional.softmax(attn, dim=-1).unsqueeze(-1)
+
+        print(f'attention weights: {attn[0, :]}')
         
-        joint_v = torch.cat((v_h, v_g), -1)
+        attn = torch.nn.functional.softmax(attn, dim=-1).unsqueeze(-1)
+
+        #self.attention_weights = attn[0, : ,0]
+
+        # i = 0
+        # for weight in self.attention_weights.data.cpu().numpy():
+        #     i = i + 1
+        #     if i < 6:
+        #         print(f'human_{i}: ' + '{:.2f}'.format(weight))
+        #     else:
+        #         print('goal: ' + '{:.2f}'.format(weight))
+        
+        joint_v = torch.cat((v_h, v_g), -2)
+        #print(f'joint_v size: {joint_v.size()}')
 
         trans_joint_v = joint_v.transpose(-2, -1)
 
         if trans_joint_v.shape[0] == 30:
             if trans_joint_v.shape[1] == 8:
                 #trans_joint_v = trans_joint_v.squeeze(1)
-                trans_joint_v = trans_joint_v.view(-1, 256, 20)
+                #print(f'joint_v size: {trans_joint_v.size()}')
+                trans_joint_v = trans_joint_v.view(-1, 128, self.human_num + 1)
                 #attn = attn.squeeze(1)
-                attn = attn.view(-1, 20, 1)
+                attn = attn.view(-1, self.human_num + 1, 1)
                 weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1)
             else:
                 trans_joint_v = trans_joint_v.squeeze(1)
@@ -427,8 +474,9 @@ class All_Attn(nn.Module):
             # print(f'attn size: {attn.size()}')
         else:
             weighted_value = torch.bmm(trans_joint_v, attn).transpose(-2, -1)
-            
-        # print(f': {weighted_value.size()}')
+            #print(f'weighted_value size: {weighted_value.size()}')
+
+        #print(f': {weighted_value.size()}')
         # print(f'robot_node size: {robot_node.size()}')
 
         if robot_node.shape[1] == 8:

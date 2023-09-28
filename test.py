@@ -26,7 +26,7 @@ def main():
 	# if -1, it will run 500 different cases; if >=0, it will run the specified test case repeatedly
 	parser.add_argument('--test_case', type=int, default=-1)
 	# model weight file you want to test
-	parser.add_argument('--test_model', type=str, default='00800.pt')
+	parser.add_argument('--test_model', type=str, default='10000.pt')
 	# whether to save trajectories of episodes
 	parser.add_argument('--render_traj', default=False, action='store_true')
 	# whether to save slide show of episodes
@@ -115,6 +115,7 @@ def main():
 		# ax.set_ylabel('y(m)', fontsize=16)
 		plt.ion()
 		plt.show()
+		pass
 	else:
 		ax = None
 
