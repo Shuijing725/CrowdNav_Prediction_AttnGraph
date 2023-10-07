@@ -19,6 +19,8 @@ from rl.networks.storage import RolloutStorage
 from crowd_nav.configs.config import Config
 from crowd_sim import *
 
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter(log_dir="runs/result_1", flush_secs=120)
 
 def main():
 	"""

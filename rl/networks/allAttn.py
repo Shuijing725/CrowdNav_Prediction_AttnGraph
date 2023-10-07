@@ -439,11 +439,11 @@ class All_Attn(nn.Module):
         attn = torch.cat((alpha_h, alpha_g), -2)
         attn = torch.sum(attn, dim=-1)
 
-        print(f'attention weights: {attn[0, :]}')
+        # print(f'attention weights before softmax: {attn[0, :]}')
         
         attn = torch.nn.functional.softmax(attn, dim=-1).unsqueeze(-1)
 
-        #self.attention_weights = attn[0, : ,0]
+        # self.attention_weights = attn[0, : ,0]
 
         # i = 0
         # for weight in self.attention_weights.data.cpu().numpy():
