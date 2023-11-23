@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from gst_updated.src.gumbel_social_transformer.utils import _get_clones
+import utils
 
 class GumbelSocialTransformer(nn.Module):
     def __init__(self, d_motion, d_model, nhead_nodes, nhead_edges, nlayer, dim_feedforward=512, dim_hidden=32, \
@@ -40,7 +41,7 @@ class GumbelSocialTransformer(nn.Module):
         self.nhead_edges = nhead_edges
         print("new gst")
 
-    def forward(self, x, A, attn_mask, tau=1., hard=False, device='cuda:0'):
+    def forward(self, x, A, attn_mask, tau=1., hard=False, device=utils.get_device()):
         r"""
         Pass the input through the encoder layers in turn.
         inputs:

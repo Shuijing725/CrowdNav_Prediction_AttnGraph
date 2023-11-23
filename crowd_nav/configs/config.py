@@ -1,5 +1,6 @@
 import numpy as np
 from arguments import get_args
+import utils
 
 class BaseConfig(object):
     def __init__(self):
@@ -11,7 +12,7 @@ class Config(object):
     args = get_args()
 
     training = BaseConfig()
-    training.device = "cuda:0" if args.cuda else "cpu"
+    training.device = utils.get_device()
 
     # general configs for OpenAI gym env
     env = BaseConfig()

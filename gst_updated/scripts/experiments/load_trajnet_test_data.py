@@ -10,6 +10,7 @@ from src.gumbel_social_transformer.st_model import st_model, offset_error_square
 from torch.utils.data import DataLoader
 import ndjson
 
+import utils
 # def load_single_batch_dataset_eth_ucy(args, pkg_path, subfolder='train', num_workers=4, shuffle=None):
 shuffle = None
 subfolder = 'test'
@@ -58,7 +59,7 @@ for dset_name in ['orca_synth', 'collision_test']:
         print(ped_id_list)
         print(pred_traj_gt)
         break
-    device = "cuda:0"
+    device = utils.get_device()
     
     logdir = join(pathhack.pkg_path, 'results', writername, "synth") 
     checkpoint_dir = join(logdir, 'checkpoint')

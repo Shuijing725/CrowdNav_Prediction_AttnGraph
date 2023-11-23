@@ -12,19 +12,19 @@ from src.gumbel_social_transformer.temperature_scheduler import Temp_Scheduler
 from scripts.experiments.eval import inference
 from datetime import datetime
 
+import utils
 
 
 def main(args):
     print('\n\n')
     print('-'*50)
     print('arguments: ', args)
-    torch.manual_seed(args.random_seed)
-    np.random.seed(args.random_seed)
+    utils.seed_everything()
     if args.batch_size != 1:
         raise RuntimeError("Batch size must be 1 for BatchTrajectoriesDataset.")
     if args.dataset == 'sdd' and args.rotation_pattern is not None:
         raise RuntimeError("SDD should not allow rotation since it uses pixels.")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = utils.get_device()
     print('device: ', device)
     loader_train = load_batch_dataset(args, pathhack.pkg_path, subfolder='train')
     if args.dataset == 'sdd':

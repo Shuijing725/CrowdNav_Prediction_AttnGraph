@@ -5,6 +5,7 @@ import pickle
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import utils
 
 def seq_to_graph(seq_, seq_rel, attn_mech='rel_conv'):
     """
@@ -174,13 +175,13 @@ if __name__ == '__main__':
     print()
     load_path = '/home/shuijing/Desktop/CrowdNav_Prediction/gst_updated/results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000/sj'
     # load_path = join(pathhack.pkg_path, 'results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000/sj')
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = utils.get_device()
     args = "100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000"
     model = CrowdNavPredInterfaceMultiEnv(load_path=load_path,
                                           device=device, config = args, num_env=n_env)
 
-    input_traj = input_traj.cuda()
-    input_binary_mask = input_binary_mask.cuda()
+    input_traj = input_traj.to(utils.get_device())
+    input_binary_mask = input_binary_mask.to(utils.get_device())
     output_traj, output_binary_mask = model.forward(
         input_traj,
         input_binary_mask,

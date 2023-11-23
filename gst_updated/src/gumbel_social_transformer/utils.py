@@ -22,7 +22,9 @@ def gumbel_softmax(logits, tau=1, hard=False, eps=1e-10):
         _, k = y_soft.data.max(-1)
         y_hard = torch.zeros(*shape)
         if y_soft.is_cuda:
-            y_hard = y_hard.cuda()
+            y_hard = y_hard.to("cuda")
+        if y_soft.is_mps:
+            y_hard = y_hard.to("mps")
         y_hard = y_hard.zero_().scatter_(-1, k.view(shape[:-1] + (1,)), 1.0)
         y = Variable(y_hard - y_soft.data) + y_soft
     else:
@@ -32,7 +34,9 @@ def gumbel_softmax(logits, tau=1, hard=False, eps=1e-10):
 def gumbel_softmax_sample(logits, tau=1, eps=1e-10):
     gumbel_noise = sample_gumbel(logits.size(), eps=eps)
     if logits.is_cuda:
-        gumbel_noise = gumbel_noise.cuda()
+        gumbel_noise = gumbel_noise.to("cuda")
+    if logits.is_mps:
+        gumbel_noise = gumbel_noise.to("mps")
     y = logits + Variable(gumbel_noise)
     return F.softmax(y / tau, dim=-1)
 

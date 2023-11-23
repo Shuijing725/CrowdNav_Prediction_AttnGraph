@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 #     negative_log_likelihood_full_partial
 from torch.utils.data import DataLoader
 
+import utils
+
 def load_batch_dataset(pkg_path, subfolder='test', num_workers=4, shuffle=None):
     result_filename = 'sj_dset_'+subfolder+'_trajectories.pt'
     dataset_folderpath = join(pkg_path, 'datasets/shuijing/orca_20humans_fov')
@@ -235,7 +237,7 @@ def CrowdNavPredInterfaceMultiEnv(
     writername = "100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000"
     dataset = "sj" # Shui Jing
     logdir = join(pathhack.pkg_path, 'results', writername, dataset)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = utils.get_device()
     if not isdir(logdir):
         raise RuntimeError('The result directory was not found.')
     checkpoint_dir = join(logdir, 'checkpoint')

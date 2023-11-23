@@ -11,6 +11,8 @@ import torch.nn as nn
 from gst_updated.src.gumbel_social_transformer.gumbel_social_transformer import GumbelSocialTransformer
 from gst_updated.src.gumbel_social_transformer.temporal_convolution_net import TemporalConvolutionNet
 
+import utils
+
 
 def offset_error_square_full_partial(x_pred, x_target, loss_mask_ped, loss_mask_pred_seq):
     """
@@ -114,7 +116,7 @@ def negative_log_likelihood_full_partial(gaussian_params, x_target, loss_mask_pe
 
 class st_model(nn.Module):
 
-    def __init__(self, args, device='cuda:0'):
+    def __init__(self, args, device=utils.get_device()):
         """
         Initialize spatial and temporal encoding components.
         inputs:
@@ -208,7 +210,7 @@ class st_model(nn.Module):
         gaussian_params = (mu, sx, sy, corr)
         return gaussian_params
 
-    def sample_gaussian(self, gaussian_params, device='cuda:0', detach_sample=False, sampling=True):
+    def sample_gaussian(self, gaussian_params, device=utils.get_device(), detach_sample=False, sampling=True):
         """
         Generate a sample from Gaussian.
         inputs:
@@ -243,7 +245,7 @@ class st_model(nn.Module):
         return sample
 
 
-    def edge_evolution(self, xt_plus, At, device='cuda:0'):
+    def edge_evolution(self, xt_plus, At, device=utils.get_device()):
         """
         Compute edges at the next time step (At_plus) based on 
         pedestrian displacements at the next time step (xt_plus)
@@ -268,7 +270,7 @@ class st_model(nn.Module):
         At_plus = At + (xt_plus.unsqueeze(3) - xt_plus.unsqueeze(2))
         return At_plus
 
-    def forward(self, x, A, attn_mask, loss_mask_rel, tau=1., hard=False, sampling=True, device='cuda:0'):
+    def forward(self, x, A, attn_mask, loss_mask_rel, tau=1., hard=False, sampling=True, device=utils.get_device()):
         """
         Forward function.
         inputs:

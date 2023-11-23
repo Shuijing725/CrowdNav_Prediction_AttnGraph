@@ -8,13 +8,14 @@ from gst_updated.src.mgnn.utils import arg_parse, average_offset_error, final_of
 from gst_updated.src.gumbel_social_transformer.st_model import st_model, offset_error_square_full_partial,\
     negative_log_likelihood_full_partial
 
+import utils
 
 def main(args):
     print('\n\n')
     print('-'*50)
-    torch.manual_seed(args.random_seed)
-    np.random.seed(args.random_seed)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    utils.seed_everything()
+    device = utils.get_device()
     loader_test = load_batch_dataset(args, pathhack.pkg_path, subfolder='test')
     print('dataset: ', args.dataset)
     writername = args2writername(args)
@@ -46,7 +47,7 @@ def main(args):
     #     print(csv_filename+' is written.')
 
 
-def inference(loader, model, args, mode='val', tau=1., device='cuda:0'):
+def inference(loader, model, args, mode='val', tau=1., device=utils.get_device()):
     with torch.no_grad():
         model.eval()
         loss_epoch, aoe_epoch, foe_epoch, loss_mask_epoch = [], [], [], []

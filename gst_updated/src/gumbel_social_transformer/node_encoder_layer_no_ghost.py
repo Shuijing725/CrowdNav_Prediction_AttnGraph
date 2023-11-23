@@ -3,6 +3,8 @@ import torch.nn as nn
 from gst_updated.src.gumbel_social_transformer.mha import VanillaMultiheadAttention
 from gst_updated.src.gumbel_social_transformer.utils import _get_activation_fn
 
+import utils
+
 class NodeEncoderLayer(nn.Module):
     r"""No ghost version"""
     def __init__(self, d_model, nhead, dim_feedforward=512, dropout=0.1, activation="relu", attn_mech='vanilla'):
@@ -22,7 +24,7 @@ class NodeEncoderLayer(nn.Module):
         self.activation = _get_activation_fn(activation)
         self.nhead = nhead
     
-    def forward(self, x, sampled_edges, attn_mask, device="cuda:0"):
+    def forward(self, x, sampled_edges, attn_mask, device=utils.get_device()):
         """
         Encode pedestrian edge with node information.
         inputs:

@@ -4,6 +4,8 @@ from torch.nn.functional import softmax
 from gst_updated.src.gumbel_social_transformer.mha import VanillaMultiheadAttention
 from gst_updated.src.gumbel_social_transformer.utils import _get_activation_fn, gumbel_softmax
 
+import utils
+
 
 class EdgeSelector(nn.Module):
     r"""No ghost version."""
@@ -23,7 +25,7 @@ class EdgeSelector(nn.Module):
         self.d_motion = d_motion
 
     
-    def forward(self, x, A, attn_mask, tau=1., hard=False, device='cuda:0'):
+    def forward(self, x, A, attn_mask, tau=1., hard=False, device=utils.get_device()):
         """
         Encode pedestrian edge with node information.
         inputs:

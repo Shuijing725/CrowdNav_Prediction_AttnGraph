@@ -11,7 +11,7 @@ from rl.evaluation import evaluate
 from rl.networks.model import Policy
 
 from crowd_sim import *
-
+import utils
 
 def main():
 	"""
@@ -86,9 +86,9 @@ def main():
 	logging.info('robot FOV %f', config.robot.FOV)
 	logging.info('humans FOV %f', config.humans.FOV)
 
-	torch.manual_seed(algo_args.seed)
-	torch.cuda.manual_seed_all(algo_args.seed)
-	if algo_args.cuda:
+	utils.seed_everything(algo_args.seed)
+ 
+	if algo_args.gpu:
 		if algo_args.cuda_deterministic:
 			# reproducible but slower
 			torch.backends.cudnn.benchmark = False
@@ -100,7 +100,7 @@ def main():
 
 
 	torch.set_num_threads(1)
-	device = torch.device("cuda" if algo_args.cuda else "cpu")
+	device = utils.get_device()
 
 	logging.info('Create other envs with new settings')
 

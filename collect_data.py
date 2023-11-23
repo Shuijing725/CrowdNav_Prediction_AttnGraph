@@ -9,6 +9,8 @@ from crowd_nav.configs.config import Config
 from rl.networks.envs import make_vec_envs
 from crowd_sim.envs import *
 
+import utils
+
 # train_data: True if collect training data, False if collect testing data
 def collectData(device, train_data, config):
     # set robot policy to orca
@@ -81,5 +83,5 @@ def collectData(device, train_data, config):
 
 if __name__ == '__main__':
     config = Config()
-    device = torch.device("cuda")
+    device = utils.get_device()
     collectData(device, config.data.collect_train_data, config)

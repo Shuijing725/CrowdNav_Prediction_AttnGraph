@@ -6,6 +6,7 @@ import numpy as np
 from gst_updated.src.mgnn.utils import seq_to_graph
 from gst_updated.src.gumbel_social_transformer.st_model import st_model
 
+import utils
 
 
 class CrowdNavPredInterfaceMultiEnv(object):
@@ -218,7 +219,7 @@ if __name__ == '__main__':
     print("input_binary_mask shape:", input_binary_mask.shape)
     print()
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = utils.get_device()
     args = "100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000"
     model = CrowdNavPredInterfaceMultiEnv(load_path='/home/shuijing/Desktop/CrowdNav_Prediction/gst_updated/results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000/sj',
                                           device=device, config = args, num_env=n_env)

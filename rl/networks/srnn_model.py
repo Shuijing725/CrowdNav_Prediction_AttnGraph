@@ -7,6 +7,8 @@ import copy
 from rl.networks.network_utils import init
 
 
+import utils
+
 class RNNBase(nn.Module):
     """
     The class for RNN with done masks
@@ -405,14 +407,13 @@ class SRNN(nn.Module):
         hidden_states_edge_RNNs = reshapeT(rnn_hxs['human_human_edge_rnn'], 1, nenv)
         masks = reshapeT(masks, seq_length, nenv)
 
-
-        self.args.no_cuda = True
-        if self.args.no_cuda:
+        
+        if self.args.no_gpu:
             all_hidden_states_edge_RNNs = Variable(
-                torch.zeros(1, nenv, self.human_num + 1, rnn_hxs['human_human_edge_rnn'].size()[-1]).cpu())
+                torch.zeros(1, nenv, self.human_num + 1, rnn_hxs['human_human_edge_rnn'].size()[-1]).to("cpu"))
         else:
             all_hidden_states_edge_RNNs = Variable(
-                torch.zeros(1, nenv, self.human_num + 1, rnn_hxs['human_human_edge_rnn'].size()[-1]).cuda())
+                torch.zeros(1, nenv, self.human_num + 1, rnn_hxs['human_human_edge_rnn'].size()[-1]).to(utils.get_device()))
 
 
         # Do forward pass through temporaledgeRNN

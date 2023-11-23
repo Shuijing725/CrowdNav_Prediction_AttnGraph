@@ -39,10 +39,10 @@ def get_args():
 
     # only works for gpu only (although you can make it work on cpu after some minor fixes)
     parser.add_argument(
-        '--no_cuda',
+        '--no-gpu',
         action='store_true',
-        default=True,
-        help='disables CUDA training')
+        default=False,
+        help='disables gpu training')
     parser.add_argument(
         '--seed', type=int, default=425, help='random seed (default: 1)')
 
@@ -208,7 +208,9 @@ def get_args():
 
     args = parser.parse_args()
 
-    args.cuda = not args.no_cuda and torch.cuda.is_available()
+    args.gpu = not args.no_gpu and (
+        torch.cuda.is_available() or torch.backends.mps.is_available()
+    )
 
     assert args.algo in ['a2c', 'ppo', 'acktr']
     if args.recurrent_policy:
