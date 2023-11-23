@@ -406,7 +406,7 @@ class SRNN(nn.Module):
         masks = reshapeT(masks, seq_length, nenv)
 
 
-
+        self.args.no_cuda = True
         if self.args.no_cuda:
             all_hidden_states_edge_RNNs = Variable(
                 torch.zeros(1, nenv, self.human_num + 1, rnn_hxs['human_human_edge_rnn'].size()[-1]).cpu())

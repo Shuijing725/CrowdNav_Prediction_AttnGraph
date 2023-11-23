@@ -49,6 +49,7 @@ class SpatialEdgeSelfAttn(nn.Module):
     def create_attn_mask(self, each_seq_len, seq_len, nenv, max_human_num):
         # mask with value of False means padding and should be ignored by attention
         # why +1: use a sentinel in the end to handle the case when each_seq_len = 18
+        self.args.no_cuda = True
         if self.args.no_cuda:
             mask = torch.zeros(seq_len * nenv, max_human_num + 1).cpu()
         else:
@@ -132,6 +133,7 @@ class EdgeAttention_M(nn.Module):
     def create_attn_mask(self, each_seq_len, seq_len, nenv, max_human_num):
         # mask with value of False means padding and should be ignored by attention
         # why +1: use a sentinel in the end to handle the case when each_seq_len = 18
+        self.args.no_cuda = True
         if self.args.no_cuda:
             mask = torch.zeros(seq_len * nenv, max_human_num + 1).cpu()
         else:
@@ -350,6 +352,7 @@ class selfAttn_merge_SRNN(nn.Module):
 
         dummy_human_mask = [0] * self.human_num
         dummy_human_mask[0] = 1
+        self.args.no_cuda = True
         if self.args.no_cuda:
             self.dummy_human_mask = Variable(torch.Tensor([dummy_human_mask]).cpu())
         else:
@@ -386,7 +389,7 @@ class selfAttn_merge_SRNN(nn.Module):
         hidden_states_node_RNNs = reshapeT(rnn_hxs['human_node_rnn'], 1, nenv)
         masks = reshapeT(masks, seq_length, nenv)
 
-
+        self.args.no_cuda = True
         if self.args.no_cuda:
             all_hidden_states_edge_RNNs = Variable(
                 torch.zeros(1, nenv, 1+self.human_num, rnn_hxs['human_human_edge_rnn'].size()[-1]).cpu())
