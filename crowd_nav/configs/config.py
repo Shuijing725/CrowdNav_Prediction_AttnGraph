@@ -49,7 +49,7 @@ class Config(object):
     # 'none': no prediction
     sim.predict_method = 'inferred'
     # render the simulation during training or not
-    sim.render = False
+    sim.render = True
 
     # for save_traj only
     render_traj = False
