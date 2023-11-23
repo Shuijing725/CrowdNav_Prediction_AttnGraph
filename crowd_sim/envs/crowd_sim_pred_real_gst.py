@@ -51,7 +51,7 @@ class CrowdSimPredRealGST(CrowdSimPred):
         # whether each human is visible to robot (ordered by human ID, should not be sorted)
         d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(self.config.sim.human_num + self.config.sim.human_num_range,),
-                                            dtype=np.bool)
+                                            dtype=np.bool_)
 
         # number of humans detected at each timestep
         d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)

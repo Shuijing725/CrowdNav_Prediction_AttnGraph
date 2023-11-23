@@ -51,7 +51,7 @@ class CrowdSimVarNum(CrowdSim):
         # whether each human is visible to robot (ordered by human ID, should not be sorted)
         d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
                                             shape=(self.max_human_num,),
-                                            dtype=np.bool)
+                                            dtype=np.bool_)
         self.observation_space=gym.spaces.Dict(d)
 
         high = np.inf * np.ones([2, ])
@@ -255,7 +255,7 @@ class CrowdSimVarNum(CrowdSim):
                     [self.last_human_states[i, 0] - self.robot.px, self.last_human_states[i, 1] - self.robot.py])
                 all_spatial_edges[self.humans[i].id, :2] = relative_pos
 
-        ob['visible_masks'] = np.zeros(self.max_human_num, dtype=np.bool)
+        ob['visible_masks'] = np.zeros(self.max_human_num, dtype=np.bool_)
         # sort all humans by distance (invisible humans will be in the end automatically)
         if sort:
             ob['spatial_edges'] = np.array(sorted(all_spatial_edges, key=lambda x: np.linalg.norm(x)))

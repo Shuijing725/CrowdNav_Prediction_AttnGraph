@@ -131,7 +131,7 @@ class rosTurtlebot2iEnv(CrowdSimPredRealGST):
 		# whether each human is visible to robot
 		d['visible_masks'] = gym.spaces.Box(low=-np.inf, high=np.inf,
 											shape=(self.config.sim.human_num + self.config.sim.human_num_range,),
-											dtype=np.bool)
+											dtype=np.bool_)
 
 		# number of humans detected at each timestep
 		d['detected_human_num'] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
@@ -191,13 +191,13 @@ class rosTurtlebot2iEnv(CrowdSimPredRealGST):
 
 		if self.use_dummy_detect:
 			self.detectedHumanNum = 1
-			self.human_visibility = np.zeros((self.max_human_num,), dtype=np.bool)
+			self.human_visibility = np.zeros((self.max_human_num,), dtype=np.bool_)
 		else:
 			# human states
 
 			self.detectedHumanNum=min(len(self.humanMsg), self.max_human_num)
 			self.current_human_states_raw = np.ones((self.detectedHumanNum, 2)) * 15
-			self.human_visibility=np.zeros((self.max_human_num, ), dtype=np.bool)
+			self.human_visibility=np.zeros((self.max_human_num, ), dtype=np.bool_)
 
 
 			for i in range(self.detectedHumanNum):
@@ -257,7 +257,7 @@ class rosTurtlebot2iEnv(CrowdSimPredRealGST):
 		self.lastTime=0.0
 		self.global_time = 0.
 
-		self.human_visibility = np.zeros((self.max_human_num,), dtype=np.bool)
+		self.human_visibility = np.zeros((self.max_human_num,), dtype=np.bool_)
 		self.detectedHumanNum=0
 		self.current_human_states = np.ones((self.max_human_num, 2)) * 15
 		self.desiredVelocity = [0.0, 0.0]
