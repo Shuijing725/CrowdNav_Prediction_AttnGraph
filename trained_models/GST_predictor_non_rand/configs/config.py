@@ -137,7 +137,7 @@ class Config(object):
 
     # config for the GST predictor
     pred = BaseConfig()
-    pred.model_dir = '/home/shuijing/Desktop/CrowdNav_Prediction/gst_updated/results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000/sj'
+    pred.model_dir = 'gst_updated/results/100-gumbel_social_transformer-faster_lstm-lr_0.001-init_temp_0.5-edge_head_0-ebd_64-snl_1-snh_8-seed_1000/sj'
 
     # LIDAR config
     lidar = BaseConfig()

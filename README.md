@@ -81,6 +81,19 @@ Note that the `config.py` and `arguments.py` in the testing folder will be loade
 The testing results are logged in `trained_models/your_output_dir/test/` folder, and are also printed on terminal.  
 If you set `visualize=True` in `test.py`, you will be able to see visualizations like this:  
 <img src="/figures/visual.gif" width="420" />  
+
+#### Test pre-trained models provided by us
+| Method                                 | `--model_dir` in test.py               | `--test_model` in test.py |
+|----------------------------------------|----------------------------------------|---------------------------|
+| Ours without randomized humans         | `trained_models/GST_predictor_no_rand` | `41200.pt`                |
+| ORCA without randomized humans         | `trained_models/ORCA_no_rand`          | `00000.pt`                |
+| Social force without randomized humans | `trained_models/SF_no_rand`            | `00000.pt`                |
+| Ours with randomized humans            | `trained_models/GST_predictor_rand`    | `41665.pt`                |
+
+#### Plot predicted future human positions
+To visualize the episodes with predicted human trajectories, as well as saving visualizations to disk, please refer to [save_slides branch](https://github.com/Shuijing725/CrowdNav_Prediction_AttnGraph/tree/save_slides).  
+Note that the above visualization and file saving will slow down testing significantly!   
+
 ### Plot the training curves
 ```
 python plot.py
