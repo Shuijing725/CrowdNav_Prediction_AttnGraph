@@ -6,19 +6,20 @@ from crowd_sim.envs.utils.info import *
 
 def evaluate(actor_critic, eval_envs, num_processes, device, test_size, logging, config, args, visualize=False):
     """ function to run all testing episodes and log the testing metrics """
-
     # initializations
     eval_episode_rewards = []
-    eval_recurrent_hidden_states = {}
 
-    node_num = 1
-    edge_num = actor_critic.base.human_num + 1
-    eval_recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_processes, node_num, actor_critic.base.human_node_rnn_size,
-                                                                 device=device)
+    if config.robot.policy not in ['orca', 'social_force']:
+        eval_recurrent_hidden_states = {}
 
-    eval_recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_processes, edge_num,
-                                                                       actor_critic.base.human_human_edge_rnn_size,
-                                                                       device=device)
+        node_num = 1
+        edge_num = actor_critic.base.human_num + 1
+        eval_recurrent_hidden_states['human_node_rnn'] = torch.zeros(num_processes, node_num, actor_critic.base.human_node_rnn_size,
+                                                                     device=device)
+
+        eval_recurrent_hidden_states['human_human_edge_rnn'] = torch.zeros(num_processes, edge_num,
+                                                                           actor_critic.base.human_human_edge_rnn_size,
+                                                                           device=device)
 
     eval_masks = torch.zeros(num_processes, 1, device=device)
 
@@ -60,13 +61,16 @@ def evaluate(actor_critic, eval_envs, num_processes, device, test_size, logging,
 
         while not done:
             stepCounter = stepCounter + 1
-            # run inference on the NN policy
-            with torch.no_grad():
-                _, action, _, eval_recurrent_hidden_states = actor_critic.act(
-                    obs,
-                    eval_recurrent_hidden_states,
-                    eval_masks,
-                    deterministic=True)
+            if config.robot.policy not in ['orca', 'social_force']:
+                # run inference on the NN policy
+                with torch.no_grad():
+                    _, action, _, eval_recurrent_hidden_states = actor_critic.act(
+                        obs,
+                        eval_recurrent_hidden_states,
+                        eval_masks,
+                        deterministic=True)
+            else:
+                action = torch.zeros([1, 2], device=device)
             if not done:
                 global_time = baseEnv.global_time
 
