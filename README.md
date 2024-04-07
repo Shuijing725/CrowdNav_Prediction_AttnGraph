@@ -5,6 +5,7 @@ For experiment demonstrations, please refer to the [youtube video](https://www.y
 
 **[News]**
 - Please check out our open-sourced sim2real tutorial [here](https://github.com/Shuijing725/CrowdNav_Sim2Real_Turtlebot)
+- Please check out my curated paper list for robot social navigation [here](https://github.com/Shuijing725/awesome-robot-social-navigation) (It is under active development) 
 
 ## Abstract
 We study the problem of safe and intention-aware robot navigation in dense and interactive crowds. 
@@ -121,7 +122,8 @@ If you find the code or the paper useful for your research, please cite the foll
   title={Intention Aware Robot Crowd Navigation with Attention-Based Interaction Graph},
   author={Liu, Shuijing and Chang, Peixin and Huang, Zhe and Chakraborty, Neeloy and Hong, Kaiwen and Liang, Weihang and Livingston McPherson, D. and Geng, Junyi and Driggs-Campbell, Katherine},
   booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
-  year={2023}
+  year={2023},
+  pages={12015-12021}
 }
 
 @inproceedings{liu2020decentralized,
