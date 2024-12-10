@@ -4,6 +4,8 @@ For more details, please refer to the [project website](https://sites.google.com
 For experiment demonstrations, please refer to the [youtube video](https://www.youtube.com/watch?v=nxpxhF019VA).
 
 **[News]**
+- Please check out our most recent follow-up work below:
+  - [HEIGHT: Heterogeneous Interaction Graph Transformer for Robot Navigation in Crowded and Constrained Environments](https://github.com/Shuijing725/CrowdNav_HEIGHT)
 - Please check out our open-sourced sim2real tutorial [here](https://github.com/Shuijing725/CrowdNav_Sim2Real_Turtlebot)
 - Please check out my curated paper list for robot social navigation [here](https://github.com/Shuijing725/awesome-robot-social-navigation) (It is under active development) 
 

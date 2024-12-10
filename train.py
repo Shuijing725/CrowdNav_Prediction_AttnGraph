@@ -241,6 +241,7 @@ def main():
 			else:
 				df.to_csv(os.path.join(algo_args.output_dir, 'progress.csv'), mode='w', header=True, index=False)
 
+	envs.close()
 
 
 if __name__ == '__main__':
